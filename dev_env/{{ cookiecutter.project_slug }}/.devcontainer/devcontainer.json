@@ -1,0 +1,30 @@
+{
+    "name": "development environment",
+    "shutdownAction": "stopContainer",
+    "customizations": {
+        "vscode": {
+            "extensions": [
+                "ms-python.python",
+                "databricks.databricks",
+                "charliermarsh.ruff",
+                "ms-toolsai.datawrangler",
+                "GitHub.copilot",
+                "mhutchie.git-graph",
+                "mechatroner.rainbow-csv"
+            ],
+            "settings": {
+                        "terminal.integrated.shell.linux": "/bin/bash"
+                    }
+        }
+    },
+    "build": {
+        "dockerfile": "Dockerfile",
+        "context": "..",
+        "args": {
+            "PYTHON_VERSION": "3.9",
+            "USERNAME": "vscode"
+        }
+    },
+    "postCreateCommand": "sudo chmod +x ./.devcontainer/postcreate.sh && ./.devcontainer/postcreate.sh",
+    "remoteUser": "vscode"
+}

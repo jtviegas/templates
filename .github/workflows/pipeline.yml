@@ -1,0 +1,16 @@
+name: release build
+
+on:
+  push:
+    branches: [ release ]
+
+jobs:
+  test_deploy:
+    name: test functions, deploy infra
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - run: |
+        ./helper.sh build ./dev_env
+        
+

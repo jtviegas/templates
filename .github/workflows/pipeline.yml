@@ -2,7 +2,7 @@ name: release build
 
 on:
   push:
-    branches: [ release ]
+    branches: [ release, development ]
 
 jobs:
   test_deploy:
@@ -12,5 +12,5 @@ jobs:
     - uses: actions/checkout@v4
     - run: |
         ./helper.sh build ./dev_env
-        
+
 

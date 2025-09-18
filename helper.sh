@@ -31,10 +31,27 @@ err(){
     local __msg="$1"
     echo " [ERR]   `date` !!! $__msg "
 }
+
+file_age_days() {
+  local file="$1"
+  local file_time
+  local current_time
+
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+      file_time=$(stat -f %m "$file")
+  else
+      file_time=$(stat -c %Y "$file")
+  fi
+
+  current_time=$(date +%s)
+  echo $(( (current_time - file_time) / 86400 ))
+}
+
 # ---------- CONSTANTS ----------
 export FILE_VARIABLES=${FILE_VARIABLES:-".variables"}
 export FILE_LOCAL_VARIABLES=${FILE_LOCAL_VARIABLES:-".local_variables"}
 export FILE_SECRETS=${FILE_SECRETS:-".secrets"}
+export INCLUDE_FILE=".bashutils"
 # -------------------------------
 
 if [ ! -f "$this_folder/$FILE_VARIABLES" ]; then
@@ -59,27 +76,13 @@ else
 fi
 
 # ---------- include bashutils ----------
-. ${this_folder}/.bashutils
-
-# ---------- FUNCTIONS ----------
-
-update_bashutils(){
-  echo "[update_bashutils] ..."
-
-  tar_file="bashutils.tar.bz2"
-  _pwd=`pwd`
-  cd "$this_folder"
-
-  curl -s https://api.github.com/repos/jtviegas/bashutils/releases/latest \
-  | grep "browser_download_url.*bashutils\.tar\.bz2" \
-  | cut -d '"' -f 4 | wget -qi -
-  tar xjpvf $tar_file
-  if [ ! "$?" -eq "0" ] ; then echo "[update_bashutils] could not untar it" && cd "$_pwd" && return 1; fi
-  rm $tar_file
-
-  cd "$_pwd"
-  echo "[update_bashutils] ...done."
-}
+# --- refresh file if older than 1 day
+bashutils="$this_folder/$INCLUDE_FILE"
+[ $(file_age_days "$bashutils") -gt 1 ] && \
+  curl -sf https://raw.githubusercontent.com/jtviegas/bashutils/master/.bashutils -o "${bashutils}.tmp" && \
+  mv "${bashutils}.tmp" "$bashutils"
+# --- source it
+. $bashutils
 
 # <=== COMMON SECTION END  <===
 # -------------------------------------
@@ -87,31 +90,13 @@ update_bashutils(){
 # =======>    MAIN SECTION    =======>
 
 # ---------- LOCAL CONSTANTS ----------
-TEST_LOCATION="/tmp/cc_templates_test"
+TEST_LOCATION="/tmp/cookiecutter_templates_test"
 if [ ! -d "$TEST_LOCATION" ]; then
   warn "we DON'T have test location: $TEST_LOCATION - creating it"
   mkdir "$TEST_LOCATION"
 fi
 
 # ---------- LOCAL FUNCTIONS ----------
-
-build_release(){
-  echo "[build_release] ..."
-
-  tar_file="bashutils.tar.bz2"
-  _pwd=`pwd`
-  cd "$this_folder"
-
-  curl -s https://api.github.com/repos/jtviegas/bashutils/releases/latest \
-  | grep "browser_download_url.*bashutils\.tar\.bz2" \
-  | cut -d '"' -f 4 | wget -qi -
-  tar xjpvf $tar_file
-  if [ ! "$?" -eq "0" ] ; then echo "[update_bashutils] could not untar it" && cd "$_pwd" && return 1; fi
-  rm $tar_file
-
-  cd "$_pwd"
-  echo "[update_bashutils] ...done."
-}
 
 # -------------------------------------
 usage() {
@@ -129,9 +114,6 @@ EOM
 debug "1: $1 2: $2 3: $3 4: $4 5: $5 6: $6 7: $7 8: $8 9: $9"
 
 case "$1" in
-  update)
-    update_bashutils
-    ;;
   build)
     build_cookiecutter_template "$2"
     ;;

@@ -1,13 +1,11 @@
-# project templates
+# templates
 
 ## requirements
 
-- docker
 - bash
-- python
-- cookiecutter
+- python's pipx
 - vscode
-  - be sure to configure `code` in your PATH:
+  - be sure to configure `code` in your PATH (if not there yet):
     - Open Visual Studio Code .
     - Open the Command Palette : Press Shift + Command + P (or go to the menu View > Command Palette ).
     - Type and select : Type Shell Command: Install 'code' command in PATH and select it. This action installs the code command in your shell's PATH.
@@ -19,17 +17,10 @@
 
 ## templates
 
-### dev_env
+### pythonlib
 
-sets up a linux (debian:bookworm) development environment with:
-- python
-- java 17
-- helper.sh script
-- zscaler root certificate authorities
-- azure cli
-- databricks cli
-- databricks host env var
+A python package library with github actions pipeline with QA, test, build and publish steps
 
 usage: 
-- `pipx run cookiecutter https://github.com/jtviegas/templates/raw/refs/heads/development/dev_env/cookiecutter.zip`
+- `pipx run cookiecutter https://github.com/jtviegas/templates/raw/refs/heads/development/pythonlib/cookiecutter.zip`
 - `code ./dev_env`

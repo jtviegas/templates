@@ -177,4 +177,7 @@ cython_debug/
 # custom
 .secrets
 .local_variables
-
+.DS_Store
+tests-results.xml
+CHANGELOG
+.vscode

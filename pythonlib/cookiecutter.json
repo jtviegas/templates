@@ -1,0 +1,11 @@
+{
+  "project_namespace": "tgedr",
+  "project_name": "pythonlib",
+  "project_fullname": "{{ cookiecutter.project_namespace.lower().strip() }}-{{ cookiecutter.project_name.lower().strip() }}",
+  "project_library": "{{ cookiecutter.project_fullname }}",
+  "project_repo": "{{ cookiecutter.project_name.lower().strip() }}",
+  "__python_version": "3.11",
+  "git_url_parent": "git@github.com:jtviegas",
+  "do_git_init": "true",
+  "unit_test_coverage": "100"
+}

@@ -1,6 +1,6 @@
 # templates
 
-handy project templates
+custom project templates
 
 
 ## requirements

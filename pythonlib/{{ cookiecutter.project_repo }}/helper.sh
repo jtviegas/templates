@@ -183,7 +183,7 @@ case "$1" in
     poetry_build
     ;;
   publish)
-    poetry_publish_az "$PUB_REPO" "$PUB_REPO_NAME" "$REPO_USER" "$REPO_TOKEN"
+    poetry_publish_pip "$PYPI_USER" "$PYPI_API_TOKEN"
     ;;
   tag)
     git_tag_and_push "$2" "$3"

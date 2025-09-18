@@ -48,8 +48,7 @@ jobs:
       run: ./helper.sh build
     - name: publish
       run: |
-        if [[ {{ '${{' }} github.ref {{ '}}' }} =~ refs/tags/^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
-          echo "Valid semver tag"
+        if [[ {{ '${{' }} github.ref {{ '}}' }} =~ refs/tags/[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
           ./helper.sh publish
         else
           echo "Invalid semver tag"

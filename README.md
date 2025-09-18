@@ -1,5 +1,8 @@
 # templates
 
+handy project templates
+
+
 ## requirements
 
 - bash

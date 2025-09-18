@@ -1,4 +1,8 @@
 name: pipeline
+
+env:
+  TEST_COVERAGE_THRESHOLD: 100
+
 on:
   push:
     branches:
@@ -39,7 +43,7 @@ jobs:
     - name: run unit tests
       run: ./helper.sh test
     - name: check coverage
-      run: ./helper.sh test_coverage_check 100
+      run: ./helper.sh test_coverage_check $TEST_COVERAGE_THRESHOLD
     - name: build
       run: ./helper.sh build
     - name: publish

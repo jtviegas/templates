@@ -1,6 +1,5 @@
 repos:
   - repo: https://github.com/astral-sh/ruff-pre-commit
-    #Ruff version - same as in devcontainer
     rev: v0.9.10
     hooks:
       - id: ruff

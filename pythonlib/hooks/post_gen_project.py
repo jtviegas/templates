@@ -22,46 +22,44 @@ def link_git_repo(git_url):
     logger.info(f"[link_git_repo|out] => {result}")
     return result
 
-# def create_python_env(python_bin):
-#   logger.info(f"[create_python_env|in] ({python_bin})")
-#   result = subprocess.run(f"{python_bin} -m venv .venv && source .venv/bin/activate", shell=True, capture_output=True, text=True)
-#   logger.info(f"[create_python_env|out] => {result}")
-#   return result
-
-def install_poetry():
-  logger.info("[install_poetry|in]")
-  result = subprocess.run("curl -sSL https://install.python-poetry.org | python3 -", shell=True, capture_output=True, text=True)
-  logger.info(f"[install_poetry|out] => {result}")
-  
+def install_uv():
+  logger.info("[install_uv|in]")
+  result = subprocess.run("curl -LsSf https://astral.sh/uv/install.sh | sh", shell=True, capture_output=True, text=True)
+  logger.info(f"[install_uv|out] => {result}")
   return int(result.returncode)
 
-def load_virtual_env():
-  logger.info("[load_virtual_env|in]")
-  logger.info(f"[load_virtual_env] => {os.getcwd()}")
-  #result = subprocess.run(f"poetry env use python{PYTHON_VERSION}", shell=True, capture_output=True, text=True).returncode
-  result = subprocess.run("poetry config virtualenvs.in-project true", shell=True, capture_output=True, text=True).returncode
-  result += subprocess.run("poetry install", shell=True, capture_output=True, text=True).returncode
-  logger.info(f"[load_virtual_env|out] => {result}")
-  return int(result)
 
 def install_git_hooks():
   logger.info("[install_git_hooks|in]")
-  logger.info(f"[install_git_hooks] => {os.getcwd()}")
-  result = subprocess.run("curl -sSL https://install.python-pre-commit.org | python3 -", shell=True, capture_output=True, text=True)
+  result = subprocess.run("uv run pre-commit install --install-hooks", shell=True, capture_output=True, text=True)
   logger.info(f"[install_git_hooks|out] => {result}")
   return int(result.returncode)
+
+def install_git_niceties():
+  logger.info("[install_git_niceties|in]")
+  result = subprocess.run("git config --global core.autocrlf false && git config core.autocrlf false", shell=True, capture_output=True, text=True)
+  logger.info(f"[install_git_niceties|out] => {result}")
+  return int(result.returncode)
+
+def uv_sync():
+  logger.info("[uv_sync|in]")
+  result = subprocess.run("uv sync --group dev", shell=True, capture_output=True, text=True)
+  logger.info(f"[uv_sync|out] => {result}")
+  return int(result.returncode)
+
 
 # ------- main section -------
 
 def main():
     result = 0
-    _git_url = '{{ cookiecutter.git_url_parent }}' + "/" + '{{ cookiecutter.project_repo }}'
     _do_git_init = '{{ cookiecutter.do_git_init }}'
-    if ('true' == _do_git_init):     
-       result += link_git_repo(_git_url)
-    result += install_git_hooks()
-    result += install_poetry()
-    logger.info("DON'T FORGET TO RUN 'poetry install' to create the virtual environment")
+    result += install_uv()
+    if ('true' == _do_git_init):   
+      _git_url = '{{ cookiecutter.git_url_parent }}' + "/" + '{{ cookiecutter.project_repo }}'  
+      result += link_git_repo(_git_url)
+      result += install_git_hooks()
+      result += install_git_niceties()
+    result += uv_sync()
     return result
 
 if __name__ == '__main__':

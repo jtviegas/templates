@@ -90,7 +90,11 @@ bashutils="$this_folder/$INCLUDE_FILE"
 
 
 # ===> MAIN SECTION    ===>
-
+# ---------- CONSTANTS ----------
+export SRC_DIR=${SRC_DIR:-"${this_folder}/src"}
+export TEST_DIR=${TEST_DIR:-"${this_folder}/tests"}
+# -------------------------------
+# --- main functions
 install_qa_libs(){
   info "[install_qa_libs|in]"
   _pwd=`pwd`
@@ -117,6 +121,108 @@ uninstall_qa_libs(){
 
   cd "$_pwd"
   local msg="[uninstall_qa_libs|out] => ${result}"
+  [[ ! "$result" -eq "0" ]] && info "$msg" && exit 1
+  info "$msg"
+}
+
+reqs(){
+  info "[reqs|in]"
+  _pwd=`pwd`
+  cd "$this_folder"
+
+  uv sync
+  local result="$?"
+  if [ ! "$result" -eq "0" ] ; then err "[reqs] could not install dependencies"; fi
+
+  cd "$_pwd"
+
+  local msg="[reqs|out] => ${result}"
+  [[ ! "$result" -eq "0" ]] && info "$msg" && exit 1
+  info "$msg"
+}
+
+unit_test(){
+  info "[unit_test|in] ($1)"
+
+  local FOLDER=$TEST_DIR
+  [[ ! -z "$1" ]] && FOLDER="$1"
+
+  _pwd=`pwd`
+  cd "$this_folder"
+
+  uv run pytest "$FOLDER" -x -s -vv --durations=0 \
+    --cov="$SRC_DIR" \
+    --cov-report=term-missing \
+    --cov-report=html \
+    --cov-report=xml \
+    --junitxml=unit-tests-results.xml
+  local result="$?"
+  [[ ! "$result" -eq "0" ]] && err "[unit_test] tests failed"
+  cd "$_pwd"
+
+  local msg="[unit_test|out] => ${result}"
+  [[ ! "$result" -eq "0" ]] && info "$msg" && exit 1
+  info "$msg"
+}
+
+unit_test_print_coverage()
+{
+  info "[unit_test_print_coverage|in]"
+  
+  uv run coverage report --show-missing
+  uv run coverage html
+  uv run coverage xml
+  result="$?"
+  [ "$result" -ne "0" ] && exit 1
+  info "[unit_test_print_coverage|out] => $result"
+  return ${result}
+}
+
+unit_test_coverage_check()
+{
+  info "[unit_test_coverage_check|in] ($1)"
+  [ -z "$1" ] && usage
+
+  local threshold=$1
+  score=$(uv run coverage report | awk '$1 == "TOTAL" {print $NF+0}')
+  result="$?"
+  [ "$result" -ne "0" ] && exit 1
+  if (( $threshold > $score )); then
+    err "[unit_test_coverage_check] $score doesn't meet $threshold"
+    exit 1
+  fi
+  info "[unit_test_coverage_check|out] => $score"
+}
+
+build(){
+  info "[build|in]"
+
+  _pwd=`pwd`
+  cd "$this_folder"
+  # changelog
+  rm -rf dist/*
+  uv build
+  local result="$?"
+  [[ ! "$result" -eq "0" ]] && err "[build] build failed"
+
+  cd "$_pwd"
+  local msg="[build|out] => ${result}"
+  [[ ! "$result" -eq "0" ]] && info "$msg" && exit 1
+  info "$msg"
+}
+
+publish(){
+  info "[publish|in]"
+
+  _pwd=`pwd`
+  cd "$this_folder"
+
+  uv publish --token "$PYPI_TOKEN"
+  local result="$?"
+  [[ ! "$result" -eq "0" ]] && err "[publish] publish failed"
+
+  cd "$_pwd"
+  local msg="[publish|out] => ${result}"
   [[ ! "$result" -eq "0" ]] && info "$msg" && exit 1
   info "$msg"
 }
@@ -157,7 +263,7 @@ case "$1" in
     uninstall_qa_libs
     ;;
   reqs)
-    poetry_reqs
+    reqs
     ;;
   linter_check)
     lint_check_ruff
@@ -169,21 +275,19 @@ case "$1" in
     sca_check_safety "$SAFETY_KEY"
     ;;
   test)
-    FOLDER="$this_folder/tests"
-    [[ ! -z $2 ]] && FOLDER="$2"
-    poetry_pytest_unit "$FOLDER" "$this_folder/src"
+    unit_test "$2"
     ;;
   test_coverage)
-    python_poetry_print_coverage
+    unit_test_print_coverage
     ;;
   test_coverage_check)
-    python_poetry_check_coverage "$2"
+    unit_test_coverage_check "$2"
     ;;
   build)
-    poetry_build
+    build
     ;;
   publish)
-    poetry_publish_pip "$PYPI_USER" "$PYPI_API_TOKEN"
+    publish
     ;;
   tag)
     git_tag_and_push "$2" "$3"

@@ -6,6 +6,6 @@
   "project_repo": "{{ cookiecutter.project_name.lower().strip() }}",
   "__python_version": "3.11",
   "git_url_parent": "git@github.com:jtviegas",
-  "do_git_init": "true",
+  "do_git_init": "false",
   "unit_test_coverage": "100"
 }

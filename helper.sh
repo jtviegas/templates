@@ -118,7 +118,7 @@ case "$1" in
     build_cookiecutter_template "$2"
     ;;
   test)
-    test_cookiecutter_template "$2" "$TEST_LOCATION"
+    test_cookiecutter_template "$this_folder/$2" "$TEST_LOCATION"
     ;;
   *)
     usage

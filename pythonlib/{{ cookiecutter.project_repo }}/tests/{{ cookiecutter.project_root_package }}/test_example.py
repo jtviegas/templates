@@ -1,5 +1,5 @@
 """Module with example function unit test for description purposes."""
-from {{ cookiecutter.project_namespace }}.{{ cookiecutter.project_name }}.example import dict2pd
+from {{ cookiecutter.project_root_package }}.example import dict2pd
 
 
 def test_example() -> None:

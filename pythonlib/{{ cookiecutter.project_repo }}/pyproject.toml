@@ -21,6 +21,12 @@ dev = [
     "ruff==0.9.10",
 ]
 
+qa = [
+     "bandit==1.8.3",
+     "safety==3.5.1",
+     "typer<0.17.0"
+]
+
 # [project.scripts]
 # run = "ssds_pycommons.pip_entrypoint:entrypoint" 
 
@@ -66,7 +72,7 @@ skip_covered = false
 skip_empty = false
 
 [tool.pytest.ini_options]
-bdd_features_base_dir = "documentation/features"
+# bdd_features_base_dir = "documentation/features"
 pythonpath = "."
 
 [tool.ruff]

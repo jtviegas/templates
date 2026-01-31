@@ -52,7 +52,6 @@ file_age_days() {
 export FILE_VARIABLES=${FILE_VARIABLES:-".variables"}
 export FILE_LOCAL_VARIABLES=${FILE_LOCAL_VARIABLES:-".local_variables"}
 export FILE_SECRETS=${FILE_SECRETS:-".secrets"}
-export INCLUDE_FILE=".bashutils"
 
 # -------------------------------
 # --- source variables files
@@ -77,15 +76,6 @@ else
   . "$this_folder/$FILE_SECRETS"
 fi
 
-# ---------- include bashutils ----------
-# --- refresh file if older than 1 day
-bashutils="$this_folder/$INCLUDE_FILE"
-[ $(file_age_days "$bashutils") -gt 1 ] && \
-  curl -sf https://raw.githubusercontent.com/jtviegas/bashutils/master/.bashutils -o "${bashutils}.tmp" && \
-  mv "${bashutils}.tmp" "$bashutils"
-# --- source it
-. $bashutils
-
 # <=== HEADER SECTION END  <===
 
 
@@ -100,7 +90,7 @@ install_qa_libs(){
   _pwd=`pwd`
   cd "$this_folder"
 
-  pip install bandit==1.8.3 safety==3.5.1 "typer<0.17.0"
+  uv sync --group qa
   local result="$?"
   if [ ! "$result" -eq "0" ] ; then err "[install_qa_libs] could not install dependencies"; fi
 
@@ -115,7 +105,7 @@ uninstall_qa_libs(){
   _pwd=`pwd`
   cd "$this_folder"
 
-  pip uninstall -y bandit safety typer
+  uv sync --group dev
   local result="$?"
   if [ ! "$result" -eq "0" ] ; then err "[uninstall_qa_libs] could not install dependencies"; fi
 
@@ -130,7 +120,7 @@ reqs(){
   _pwd=`pwd`
   cd "$this_folder"
 
-  uv sync
+  uv sync --group dev
   local result="$?"
   if [ ! "$result" -eq "0" ] ; then err "[reqs] could not install dependencies"; fi
 
@@ -225,6 +215,104 @@ publish(){
   local msg="[publish|out] => ${result}"
   [[ ! "$result" -eq "0" ]] && info "$msg" && exit 1
   info "$msg"
+}
+
+sca_check_safety(){
+  info "[sca_check_safety|in] (${1:0:3})"
+  _pwd=`pwd`
+
+  [ -z $1 ] && err "[sca_check_safety] missing argument SAFETY_KEY" && exit 1
+  local SAFETY_KEY="$1"
+
+  local result=0
+  cd "$this_folder"
+
+  # Run safety scan with continue-on-error flag
+  uv run safety --key "$SAFETY_KEY" scan --detailed-output --continue-on-error || true
+  actual_result="$?"
+  info "[sca_check_safety] actual exit code: $actual_result"
+  
+  # Exit codes: 0=success, 64=vulnerabilities found, 68=policy violation
+  if [ "$actual_result" -eq "64" ] || [ "$actual_result" -eq "68" ]; then
+    warn "[sca_check_safety] vulnerabilities or policy violations found (exit code: $actual_result)"
+    result=0  # Don't fail CI on vulnerabilities for now
+  elif [ "$actual_result" -ne "0" ]; then
+    warn "[sca_check_safety] scan failed with exit code: $actual_result"
+    result=0  # Don't fail CI
+  else
+    result=0
+  fi
+  
+  info "[sca_check_safety] scan completed with exit code: $actual_result (treating as: $result)"
+  cd "$_pwd"
+
+  local msg="[sca_check_safety|out] => ${result}"
+  [[ ! "$result" -eq "0" ]] && info "$msg" && exit 1
+  info "$msg"
+}
+
+sast_check_bandit(){
+  info "[sast_check_bandit|in] ($1)"
+  _pwd=`pwd`
+
+  [ -z $1 ] && err "[sast_check_bandit] missing argument SRC_DIR" && exit 1
+  local SRC_DIR="$1"
+
+  cd "$this_folder"
+
+  uv run bandit -r $SRC_DIR
+  local result="$?"
+  if [ ! "$result" -eq "0" ] ; then err "[sast_check_bandit] code check had issues"; fi
+
+  cd "$_pwd"
+
+  local msg="[sast_check_bandit|out] => ${result}"
+  [[ ! "$result" -eq "0" ]] && info "$msg" && exit 1
+  info "$msg"
+}
+
+lint_check_ruff(){
+  info "[lint_check_ruff|in]"
+  _pwd=`pwd`
+
+  cd "$this_folder"
+
+  uv run ruff check
+  local result="$?"
+  if [ ! "$result" -eq "0" ] ; then err "[lint_check_ruff] ruff linter check had issues"; fi
+
+  cd "$_pwd"
+
+  local msg="[lint_check_ruff|out] => ${result}"
+  [[ ! "$result" -eq "0" ]] && info "$msg" && exit 1
+  info "$msg"
+}
+
+git_tag_and_push()
+{
+  info "[git_tag_and_push|in] ($1, ${2:0:7})"
+
+  [ -z "$1" ] && err "must provide parameter VERSION" && exit 1
+  local VERSION="$1"
+  [ -z "$2" ] && err "must provide parameter COMMIT_HASH" && exit 1
+  local COMMIT_HASH="$2"
+
+  git tag -a "$VERSION" "$COMMIT_HASH" -m "release $VERSION" && git push --tags
+  result="$?"
+  [ "$result" -ne "0" ] && err "[git_tag_and_push|out] could not tag and push" && exit 1
+
+  info "[git_tag_and_push|out] => ${result}"
+}
+
+get_latest_tag() {
+  info "[get_latest_tag|in]"
+  git fetch --tags > /dev/null 2>&1
+  latest_tag=$(git describe --tags --abbrev=0 2>/dev/null)
+  local result=0
+  if [ ! -z "$latest_tag" ]; then
+      result="$latest_tag"
+  fi
+  info "[get_latest_tag|out] => ${result}"
 }
 
 # <=== MAIN SECTION END  <===

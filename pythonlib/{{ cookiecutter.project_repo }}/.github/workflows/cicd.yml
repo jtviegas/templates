@@ -1,4 +1,4 @@
-name: pipeline
+name: cicd
 
 env:
   TEST_COVERAGE_THRESHOLD: 100
@@ -11,7 +11,7 @@ on:
       - '[0-9]+.[0-9]+.[0-9]+' 
 jobs:
   build:
-    runs-on: macos-latest
+    runs-on: ubuntu-24.04
     steps:
     - uses: actions/checkout@v4
       with:

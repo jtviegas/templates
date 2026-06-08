@@ -25,5 +25,6 @@ custom project templates
 A python package library with github actions pipeline with QA, test, build and publish steps
 
 usage: 
-- `pipx run cookiecutter https://github.com/jtviegas/templates/raw/refs/heads/development/pythonlib/cookiecutter.zip`
-- `code ./dev_env`
+- download the specific cookiecutter.zip file
+- `pipx run cookiecutter cookiecutter.zip`
+- `code ./<PROJECT_NAME_YOU_PROVIDED>`

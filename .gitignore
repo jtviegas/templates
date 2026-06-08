@@ -176,4 +176,4 @@ cython_debug/
 .secrets
 .local_variables
 .DS_Store
-
+.bashutils.last_check

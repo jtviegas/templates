@@ -6,8 +6,8 @@ import subprocess
 
 print("********** POST GENERATION HOOK *************")
 
-PYTHON_BINARY=os.getenv("PYTHON_3_11")
-PYTHON_VERSION="3.11"
+PYTHON_BINARY=os.getenv("PYTHON_3_12")
+PYTHON_VERSION="3.12"
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)

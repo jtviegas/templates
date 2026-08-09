@@ -1,6 +1,6 @@
 {
   "project_namespace": "tgedr",
-  "project_name": "python-lib",
+  "project_name": "pythonlib",
   "__project_name_treated": "{{ cookiecutter.project_name.lower().strip().replace('-', '_') }}",
   "project_fullname": "{{ cookiecutter.project_namespace.lower().strip() }}-{{ cookiecutter.project_name.lower().strip() }}",
   "project_root_package": "{{ cookiecutter.project_namespace.lower().strip() }}_{{ cookiecutter.__project_name_treated }}",

@@ -2,6 +2,8 @@ name: cicd
 
 env:
   TEST_COVERAGE_THRESHOLD: 100
+  PYTHON_VERSION: "3.12.3"
+  JAVA_VERSION: "17"
 
 on:
   push:
@@ -13,18 +15,21 @@ jobs:
   build:
     runs-on: ubuntu-24.04
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v6
       with:
         fetch-depth: '0'
     - uses: actions/setup-java@v4
       with:
         distribution: 'corretto'
-        java-version: '8'
+        java-version: ${{ env.JAVA_VERSION }}
     - uses: actions/setup-python@v4
       with:
-        python-version: '3.12'
+        python-version: ${{ env.PYTHON_VERSION }}
     - name: 'install uv'
       run: curl -LsSf https://astral.sh/uv/install.sh | sh
+    - name: 'setup python env'
+      run: |
+        uv venv .venv --python ${{ env.PYTHON_VERSION }}
     - name: install requirements
       run: ./helper.sh reqs
     - name: "run SAST test (bandit)"

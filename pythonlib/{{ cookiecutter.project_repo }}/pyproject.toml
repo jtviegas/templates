@@ -10,8 +10,9 @@ readme = "README.md"
 requires-python = ">={{ cookiecutter.__python_version }},<{{ cookiecutter.__python_version.split('.')[0] }}.{{ cookiecutter.__python_version.split('.')[1] | int + 1 }}"
 
 dependencies = [
-    "pandas>=2.3.0,<3.0.0",
-    "tgedr-pycommons>=1.2.1",
+    "tgedr-pycommons>=1.2.3",
+    "tgedr-dataops>=1.3.2",
+    "tgedr-observability>=0.0.9",
 ]
 [dependency-groups]
 dev = [

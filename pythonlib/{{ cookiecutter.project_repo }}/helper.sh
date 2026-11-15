@@ -225,6 +225,7 @@ usage() {
       - build                                 builds the package
       - publish                               publishes the package
       - tag                                   creates a git tag with the version and pushes it
+      - update_readme                         updates the README file
 EOM
   exit 1
 }
@@ -260,6 +261,9 @@ case "$1" in
     ;;
   tag)
     git_tag_and_push_auto_uv
+    ;;
+  update_readme)
+    update_readme_with_ai_model
     ;;
   *)
     usage

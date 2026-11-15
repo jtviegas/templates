@@ -27,6 +27,9 @@ jobs:
         python-version: {{ '${{' }} env.PYTHON_VERSION {{ '}}' }} 
     - name: 'install uv'
       run: curl -LsSf https://astral.sh/uv/install.sh | sh
+    - name: 'setup python env'
+      run: |
+        uv venv .venv --python {{ '${{' }}  env.PYTHON_VERSION {{ '}}' }}
     - name: install requirements
       run: ./helper.sh reqs
     - name: "run SAST test (bandit)"

@@ -173,12 +173,35 @@ export TEST_DIR=${TEST_DIR:-"${this_folder}/test"}
 
 reqs(){
   info "[reqs|in]"
-  _pwd=`pwd`
+  _pwd=$(pwd)
   cd "$this_folder"
 
-  uv sync --group dev
-  local result="$?"
-  if [ ! "$result" -eq "0" ] ; then err "[reqs] could not install dependencies"; fi
+  local result=0
+
+  if ! command -v pi >/dev/null 2>&1; then
+    info "[reqs] pi is not installed; installing it"
+    if ! command -v curl >/dev/null 2>&1; then
+      err "[reqs] curl is required to install pi"
+      result=1
+    elif ! bash -o pipefail -c 'curl -fsSL https://pi.dev/install.sh | sh'; then
+      err "[reqs] could not install pi"
+      result=1
+    else
+      if [ -x "$HOME/.local/bin/pi" ]; then
+        export PATH="$HOME/.local/bin:$PATH"
+      fi
+      if ! command -v pi >/dev/null 2>&1; then
+        err "[reqs] pi was installed but is not available in PATH"
+        result=1
+      fi
+    fi
+  fi
+
+  if [ "$result" -eq "0" ]; then
+    uv sync --group dev
+    result="$?"
+    if [ ! "$result" -eq "0" ] ; then err "[reqs] could not install dependencies"; fi
+  fi
 
   cd "$_pwd"
 

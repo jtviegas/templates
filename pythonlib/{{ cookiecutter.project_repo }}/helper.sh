@@ -102,8 +102,6 @@ define_release_to_update(){
 update_bashutils(){
   info "[update_bashutils|in] ($1)"
 
-  [ -z "$BASHUTILS_AUTO_UPDATE" ] || [ "$BASHUTILS_AUTO_UPDATE" -ne "1" ] && warn "[update_bashutils] auto update is disabled" && return 1
-
   local _pwd=$(pwd)
   local release
   local result
@@ -127,10 +125,10 @@ update_bashutils(){
   cd "$this_folder" || exit 1
 
   echo "$release_json" | python3 -c "
-  import sys, json
-  assets = json.load(sys.stdin).get('assets', [])
-  for a in assets:
-      print(a['id'], a['name'])
+import sys, json
+assets = json.load(sys.stdin).get('assets', [])
+for a in assets:
+    print(a['id'], a['name'])
   " | while read -r asset_id asset_name; do
     info "[get_updated_release] downloading asset: $asset_name (id: $asset_id)"
     eval curl -fsSL -H "\"Accept: application/octet-stream\"" \
@@ -157,8 +155,6 @@ source_if_exists "$this_folder/$FILE_LOCAL_VARIABLES"
 source_if_exists "$this_folder/$FILE_SECRETS"
 
 # ---------- include bashutils ----------
-BASHUTILS_AUTO_UPDATE="${BASHUTILS_AUTO_UPDATE:-0}"
-update_bashutils
 . "$this_folder/$INCLUDE_FILE"
 
 # <=== HEADER SECTION END  <===
@@ -232,7 +228,6 @@ usage() {
       - build                                 builds the package
       - publish                               publishes the package
       - tag                                   creates a git tag with the version and pushes it
-      - update_readme                         updates the README file
 EOM
   exit 1
 }
@@ -240,7 +235,7 @@ EOM
 
 case "$1" in
   update_bashutils)
-    BASHUTILS_AUTO_UPDATE=1 update_bashutils "$2"
+    update_bashutils "$2"
     ;;
   reqs)
     reqs
@@ -271,9 +266,6 @@ case "$1" in
     ;;
   tag)
     git_tag_and_push_auto_uv
-    ;;
-  update_readme)
-    update_readme_with_ai_model
     ;;
   *)
     usage
